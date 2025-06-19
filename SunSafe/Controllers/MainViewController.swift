@@ -2,10 +2,13 @@ import UIKit
 import DGCharts
 import Charts
 
+/// Основной экран: показывает текущую погоду, UV индекс и график почасового UV-прогноза.
 class MainViewController: UIViewController {
 
+    /// ViewModel для управления данными и бизнес-логикой
     private let viewModel = MainViewModel()
 
+    /// Метка для отображения температуры
     private let temperatureLabel: UILabel = {
         let l = UILabel()
         l.font = .systemFont(ofSize: 32, weight: .bold)
@@ -14,7 +17,7 @@ class MainViewController: UIViewController {
         return l
     }()
 
-    
+    /// Метка для отображения погодного описания
     private let descriptionLabel: UILabel = {
         let l = UILabel()
         l.font = .systemFont(ofSize: 20, weight: .medium)
@@ -23,6 +26,7 @@ class MainViewController: UIViewController {
         return l
     }()
 
+    /// Метка для отображения UV индекса
     private let uvIndexLabel: UILabel = {
         let l = UILabel()
         l.font = .systemFont(ofSize: 18, weight: .regular)
@@ -31,6 +35,7 @@ class MainViewController: UIViewController {
         return l
     }()
 
+    /// Индикатор загрузки данных
     private let loader: UIActivityIndicatorView = {
         let ind = UIActivityIndicatorView(style: .large)
         ind.hidesWhenStopped = true
@@ -38,7 +43,7 @@ class MainViewController: UIViewController {
         return ind
     }()
 
-    // MARK: – график
+    /// Линейный график для отображения почасового UV-прогноза
     private let chartView: LineChartView = {
         let chart = LineChartView()
         chart.translatesAutoresizingMaskIntoConstraints = false
@@ -51,6 +56,7 @@ class MainViewController: UIViewController {
         return chart
     }()
 
+    /// Инициализация экрана и запуск загрузки данных
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
@@ -63,7 +69,7 @@ class MainViewController: UIViewController {
         viewModel.fetchForecast()
     }
 
-    // MARK: – UI Layout
+    /// Настраивает расположение UI-элементов
     private func setupLayout() {
         [temperatureLabel, descriptionLabel, uvIndexLabel, loader].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
@@ -93,7 +99,7 @@ class MainViewController: UIViewController {
         ])
     }
 
-    // MARK: – Chart look & feel
+    /// Настраивает визуальный стиль графика
     private func setupChartStyle() {
         // Оси
         let x = chartView.xAxis
@@ -117,7 +123,7 @@ class MainViewController: UIViewController {
         chartView.highlightPerTapEnabled = true
     }
 
-    // MARK: – Binding
+    /// Привязывает обработчики обновления данных и ошибок от ViewModel
     private func setupBinding() {
         viewModel.onDataUpdate = { [weak self] temperature, condition, uv in
             self?.temperatureLabel.text = temperature
@@ -140,7 +146,7 @@ class MainViewController: UIViewController {
         }
     }
 
-    // MARK: – Chart data
+    /// Обновляет данные на графике UV-прогноза
     private func updateChart(with data: [HourForecast]) {
 
         let entries = data.enumerated().map { idx, item in
@@ -176,10 +182,12 @@ class MainViewController: UIViewController {
         chartView.animate(xAxisDuration: 0.6)
     }
 
-    // MARK: – UX helpers
+    /// Показывает индикатор загрузки
     private func showLoader() { loader.startAnimating() }
+    /// Скрывает индикатор загрузки
     private func hideLoader() { loader.stopAnimating() }
 
+    /// Показывает всплывающее сообщение об ошибке
     private func showAlert(title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Ок", style: .default))
