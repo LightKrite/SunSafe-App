@@ -2,7 +2,7 @@ import Foundation
 
 /// Корневой объект ответа с текущей погодой от API
 /// Содержит информацию о локации и текущем состоянии
-struct WeatherResponse: Decodable {
+struct WeatherResponse: Codable {
     /// Информация о локации
     let location: Location
     /// Текущая погода
@@ -10,7 +10,7 @@ struct WeatherResponse: Decodable {
 }
 
 /// Структура с описанием локации (город, локальное время)
-struct Location: Decodable {
+struct Location: Codable {
     /// Название города
     let name: String
     /// Локальное время
@@ -18,7 +18,7 @@ struct Location: Decodable {
 }
 
 /// Текущие погодные условия (температура, UV, состояние)
-struct CurrentWeather: Decodable {
+struct CurrentWeather: Codable {
     /// Температура воздуха в градусах Цельсия
     let temp_c: Double
     /// Описание погодного состояния
@@ -28,7 +28,7 @@ struct CurrentWeather: Decodable {
 }
 
 /// Описание погодного состояния, включая текст и иконку
-struct WeatherCondition: Decodable {
+struct WeatherCondition: Codable {
     /// Текстовое описание
     let text: String
     /// URL или имя иконки погоды
