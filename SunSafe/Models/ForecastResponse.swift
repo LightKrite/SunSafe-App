@@ -15,6 +15,8 @@ struct Forecast: Codable {
 
 /// Прогноз на конкретный день (почасовой)
 struct ForecastDay: Codable {
+    /// Дата прогноза (строка)
+    let date: String
     /// Массив почасовых прогнозов
     let hour: [HourForecast]
 }
@@ -25,4 +27,6 @@ struct HourForecast: Codable {
     let time: String
     /// Значение UV-индекса
     let uv: Double
+    /// Температура воздуха в градусах Цельсия
+    let temp_c: Double
 }
