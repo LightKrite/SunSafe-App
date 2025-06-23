@@ -7,6 +7,7 @@ class MainViewController: UIViewController {
 
     /// ViewModel для управления данными и бизнес-логикой
     private let viewModel = MainViewModel()
+    private let weatherCache = WeatherCacheManager()
 
     /// Метка для отображения температуры
     private let temperatureLabel: UILabel = {
@@ -63,6 +64,20 @@ class MainViewController: UIViewController {
         setupLayout()
         setupChartStyle()
         setupBinding()
+
+        if let cachedForecast: ForecastResponse = weatherCache.load(ForecastResponse.self, for: .forecast) {
+            let hourly = cachedForecast.forecast.forecastday.first?.hour ?? []
+            viewModel.onForecastUpdate?(cachedForecast)
+        } else {
+            print("🔄 No valid forecast cache, loading from API")
+        }
+        if let cachedCurrent: WeatherResponse = weatherCache.load(WeatherResponse.self, for: .currentWeather) {
+            self.temperatureLabel.text = "\(cachedCurrent.current.temp_c)°C"
+            self.descriptionLabel.text = cachedCurrent.current.condition.text
+            self.uvIndexLabel.text = "UV: \(cachedCurrent.current.uv)"
+        } else {
+            print("🔄 No valid current weather cache, loading from API")
+        }
 
         showLoader()
         viewModel.fetchWeather()
@@ -125,10 +140,11 @@ class MainViewController: UIViewController {
 
     /// Привязывает обработчики обновления данных и ошибок от ViewModel
     private func setupBinding() {
-        viewModel.onDataUpdate = { [weak self] temperature, condition, uv in
-            self?.temperatureLabel.text = temperature
-            self?.descriptionLabel.text = condition
-            self?.uvIndexLabel.text = uv
+        viewModel.onDataUpdate = { [weak self] weatherResponse in
+            self?.temperatureLabel.text = "\(weatherResponse.current.temp_c)°C"
+            self?.descriptionLabel.text = weatherResponse.current.condition.text
+            self?.uvIndexLabel.text = "UV: \(weatherResponse.current.uv)"
+            self?.weatherCache.save(weatherResponse, for: .currentWeather)
             self?.hideLoader()
         }
 
@@ -137,11 +153,13 @@ class MainViewController: UIViewController {
             self?.showAlert(title: "Ошибка", message: msg)
         }
 
-        viewModel.onForecastUpdate = { [weak self] hourly in
+        viewModel.onForecastUpdate = { [weak self] forecastResponse in
+            let hourly = forecastResponse.forecast.forecastday.first?.hour ?? []
             let filtered = hourly.filter {
                 let hour = Int($0.time.suffix(5).prefix(2)) ?? 0
                 return hour >= 6 && hour <= 22
             }
+            self?.weatherCache.save(forecastResponse, for: .forecast)
             self?.updateChart(with: filtered)
         }
     }
