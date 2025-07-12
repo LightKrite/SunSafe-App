@@ -9,7 +9,7 @@ final class HourAxisFormatter: IndexAxisValueFormatter {
     private let labels: [String]
 
     /// Инициализирует форматтер для диапазона часов (по умолчанию 6-22).
-    init(startHour: Int = 6, endHour: Int = 22) {
+    init(startHour: Int = 6, endHour: Int = 20) {
         self.labels = (startHour...endHour).map { "\($0)h" }
         super.init(values: labels)
     }

@@ -9,6 +9,8 @@ final class UVMarker: MarkerView {
     private let timeLabel = UILabel()
     /// Метка для отображения значения UV-индекса
     private let uvLabel   = UILabel()
+    
+    private let horizontalPadding: CGFloat = 16
 
     /// Инициализация и настройка внешнего вида маркера
     override init(frame: CGRect) {
@@ -23,23 +25,34 @@ final class UVMarker: MarkerView {
         timeLabel.font = .systemFont(ofSize: 12, weight: .semibold)
         uvLabel.font   = .systemFont(ofSize: 12, weight: .regular)
 
-        [timeLabel, uvLabel].forEach {
-            $0.translatesAutoresizingMaskIntoConstraints = false
-            addSubview($0)
-        }
-
-        NSLayoutConstraint.activate([
-            timeLabel.topAnchor.constraint(equalTo: topAnchor, constant: 6),
-            timeLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-
-            uvLabel.topAnchor.constraint(equalTo: timeLabel.bottomAnchor, constant: 2),
-            uvLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
-            uvLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -6)
-        ])
+        addSubview(timeLabel)
+        addSubview(uvLabel)
     }
 
     /// Не используется (создание через storyboard не поддерживается)
     required init?(coder: NSCoder) { fatalError() }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        
+        // Расположение timeLabel: центр сверху с отступом 6
+        let timeSize = timeLabel.intrinsicContentSize
+        timeLabel.frame = CGRect(
+            x: (bounds.width - timeSize.width) / 2,
+            y: 6,
+            width: timeSize.width,
+            height: timeSize.height
+        )
+        
+        // Расположение uvLabel: центр под timeLabel с отступом 2
+        let uvSize = uvLabel.intrinsicContentSize
+        uvLabel.frame = CGRect(
+            x: (bounds.width - uvSize.width) / 2,
+            y: timeLabel.frame.maxY + 2,
+            width: uvSize.width,
+            height: uvSize.height
+        )
+    }
 
     /// Обновляет содержимое маркера при выделении новой точки на графике
     /// - Parameters:
@@ -48,7 +61,9 @@ final class UVMarker: MarkerView {
     override func refreshContent(entry: ChartDataEntry, highlight: Highlight) {
         timeLabel.text = HourAxisFormatter.display(for: entry.x)
         uvLabel.text   = "UV \(Int(entry.y))"
-        layoutIfNeeded()
+        invalidateIntrinsicContentSize()
+        setNeedsLayout()
+        self.frame.size.height = 6 + timeLabel.intrinsicContentSize.height + 2 + uvLabel.intrinsicContentSize.height + 6
     }
 
     /// Смещает маркер так, чтобы он появлялся над выделенной точкой
@@ -57,5 +72,17 @@ final class UVMarker: MarkerView {
     override func offsetForDrawing(atPoint point: CGPoint) -> CGPoint {
         CGPoint(x: -bounds.width/2, y: -bounds.height - 8)
     }
-}
+    
+    override var intrinsicContentSize: CGSize {
+        let timeWidth = timeLabel.intrinsicContentSize.width
+        let uvWidth = uvLabel.intrinsicContentSize.width
+        let dynamicWidth = max(timeWidth, uvWidth) + horizontalPadding * 2
+        let width = max(80, dynamicWidth) // минимум 80
 
+        let timeHeight = timeLabel.intrinsicContentSize.height
+        let uvHeight = uvLabel.intrinsicContentSize.height
+        let height = 6 + timeHeight + 2 + uvHeight + 6
+
+        return CGSize(width: width, height: height)
+    }
+}

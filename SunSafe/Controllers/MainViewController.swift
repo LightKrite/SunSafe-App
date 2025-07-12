@@ -44,15 +44,15 @@ class MainViewController: UIViewController {
         return ind
     }()
 
-    /// Линейный график для отображения почасового UV-прогноза
-    private let chartView: LineChartView = {
-        let chart = LineChartView()
+    /// График UV‑индекса (BarChartView вместо LineChartView)
+    private let chartView: BarChartView = {
+        let chart = BarChartView()
         chart.translatesAutoresizingMaskIntoConstraints = false
         chart.chartDescription.enabled = false
         chart.legend.enabled = false
         chart.rightAxis.enabled = false                // только левая ось
         chart.leftAxis.axisMinimum = 0
-        chart.leftAxis.axisMaximum = 11
+        chart.leftAxis.axisMaximum = 12
         chart.xAxis.labelPosition = .bottom
         return chart
     }()
@@ -134,7 +134,7 @@ class MainViewController: UIViewController {
         chartView.setScaleEnabled(false)
 
         // Кастомный маркер-тултип
-        chartView.marker = UVMarker(frame: CGRect(x: 0, y: 0, width: 80, height: 44))
+        chartView.marker = UVMarker(frame: .zero)
         chartView.highlightPerTapEnabled = true
     }
 
@@ -166,38 +166,26 @@ class MainViewController: UIViewController {
 
     /// Обновляет данные на графике UV-прогноза
     private func updateChart(with data: [HourForecast]) {
-
-        let entries = data.enumerated().map { idx, item in
-            ChartDataEntry(x: Double(idx), y: item.uv)
+        let entries: [BarChartDataEntry] = data.enumerated().map { idx, item in
+            BarChartDataEntry(x: Double(idx), y: item.uv)
         }
 
-        let dataSet = LineChartDataSet(entries: entries, label: "")
-        dataSet.mode               = .cubicBezier
-        dataSet.lineWidth          = 2
-        dataSet.drawCirclesEnabled = false
-        dataSet.drawValuesEnabled  = false
-        dataSet.setColor(UIColor.label)
+        let dataSet = BarChartDataSet(entries: entries, label: "")
+        dataSet.drawValuesEnabled = false
+        dataSet.highlightEnabled  = true
+        dataSet.barShadowColor    = .clear
+        dataSet.barBorderWidth    = 0
 
-        // градиент-заливка
-        let colors = [UIColor.systemGreen.cgColor,
-                      UIColor.systemYellow.cgColor,
-                      UIColor.systemRed.cgColor]
-
-        if let gradient = CGGradient(colorsSpace: nil,
-                                     colors: colors as CFArray,
-                                     locations: [0, 0.25, 1]) {
-
-            // 2. Создаём *конкретный* Fill
-            let gradientFill = LinearGradientFill(gradient: gradient, angle: 90)
-
-            // 3. Применяем к датасету
-            dataSet.fill              = gradientFill   // ✅ теперь тип совпадает
-            dataSet.drawFilledEnabled = true
-            dataSet.fillAlpha         = 1
+        // Цвет по градиенту: 0 — зелёный, 12 — бордово-красный
+        dataSet.colors = data.map { hour in
+            Self.color(forUV: hour.uv)
         }
 
-        chartView.data = LineChartData(dataSet: dataSet)
-        chartView.animate(xAxisDuration: 0.6)
+        let chartData = BarChartData(dataSet: dataSet)
+        chartData.barWidth = 0.85
+
+        chartView.data = chartData
+        chartView.animate(yAxisDuration: 0.8, easingOption: .easeOutCubic)
     }
 
     /// Показывает индикатор загрузки
@@ -210,5 +198,43 @@ class MainViewController: UIViewController {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Ок", style: .default))
         present(alert, animated: true)
+    }
+
+    /// Генерирует цвет по градиенту от зелёного (0) до бордово-красного (12)
+    private static func color(forUV uv: Double) -> UIColor {
+        let clampedUV = min(max(uv, 0), 12)
+        let t = CGFloat(clampedUV / 12.0)
+        // Цвета: зелёный → жёлтый → оранжевый → красный → бордово-красный
+        // Ключевые точки: 0, 3, 6, 9, 12
+        let colors: [UIColor] = [
+            UIColor.systemGreen,
+            UIColor.systemYellow,
+            UIColor.systemOrange,
+            UIColor.systemRed,
+            UIColor(red: 0.5, green: 0, blue: 0, alpha: 1) // бордово-красный
+        ]
+        let stops: [CGFloat] = [0, 0.25, 0.5, 0.75, 1]
+        // Находим между какими двумя ключевыми точками находится t
+        for i in 1..<stops.count {
+            if t <= stops[i] {
+                let t0 = stops[i-1]
+                let t1 = stops[i]
+                let localT = (t - t0) / (t1 - t0)
+                return blend(colors[i-1], colors[i], fraction: localT)
+            }
+        }
+        return colors.last!
+    }
+    /// Линейная интерполяция двух цветов
+    private static func blend(_ c1: UIColor, _ c2: UIColor, fraction: CGFloat) -> UIColor {
+        var r1: CGFloat = 0, g1: CGFloat = 0, b1: CGFloat = 0, a1: CGFloat = 0
+        var r2: CGFloat = 0, g2: CGFloat = 0, b2: CGFloat = 0, a2: CGFloat = 0
+        c1.getRed(&r1, green: &g1, blue: &b1, alpha: &a1)
+        c2.getRed(&r2, green: &g2, blue: &b2, alpha: &a2)
+        let r = r1 + (r2 - r1) * fraction
+        let g = g1 + (g2 - g1) * fraction
+        let b = b1 + (b2 - b1) * fraction
+        let a = a1 + (a2 - a1) * fraction
+        return UIColor(red: r, green: g, blue: b, alpha: a)
     }
 }
