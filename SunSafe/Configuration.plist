@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>WeatherAPIKey</key>
+	<string>OBF:JnZ6ISAnI3twJnsndid7J3smd3NwcHpxdXB3c3JydA==</string>
+	<key>BaseURL</key>
+	<string>https://api.weatherapi.com/v1</string>
+	<key>NetworkTimeout</key>
+	<real>30</real>
+	<key>CacheLifetime</key>
+	<real>3600</real>
+	<key>DefaultCity</key>
+	<string>Belgrade</string>
+</dict>
+</plist>

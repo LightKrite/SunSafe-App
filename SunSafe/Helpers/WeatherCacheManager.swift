@@ -10,9 +10,14 @@ final class WeatherCacheManager {
         case currentWeatherDate = "cached_current_weather_date"
     }
 
-    private let cacheLifetime: TimeInterval = 60 * 60  // 1 час (в секундах)
-
+    /// Время жизни кеша берем из конфигурации
+    private let cacheLifetime: TimeInterval
     private let userDefaults = UserDefaults.standard
+    
+    /// Инициализация с использованием конфигурационного менеджера
+    init() {
+        self.cacheLifetime = ConfigurationManager.shared.cacheLifetime
+    }
 
     // MARK: Save
 
@@ -42,6 +47,7 @@ final class WeatherCacheManager {
 
         if Date().timeIntervalSince(date) > cacheLifetime {
             print("⚠️ Cache expired for key: \(key.rawValue)")
+            clearExpiredCache(for: key)
             return nil
         }
 
@@ -51,6 +57,7 @@ final class WeatherCacheManager {
             return decoded
         } else {
             print("⚠️ Failed to decode cached data for key: \(key.rawValue)")
+            clearCorruptedCache(for: key)
             return nil
         }
     }
@@ -67,10 +74,35 @@ final class WeatherCacheManager {
         clear(for: .forecast)
         clear(for: .currentWeather)
     }
+    
+    /// Очищает просроченный кеш
+    private func clearExpiredCache(for key: CacheKey) {
+        clear(for: key)
+        print("🧹 Cleared expired cache for key: \(key.rawValue)")
+    }
+    
+    /// Очищает поврежденный кеш
+    private func clearCorruptedCache(for key: CacheKey) {
+        clear(for: key)
+        print("🔧 Cleared corrupted cache for key: \(key.rawValue)")
+    }
 
     // MARK: Helpers
 
     private func dateKey(for key: CacheKey) -> String {
         return key.rawValue + "_date"
+    }
+    
+    /// Проверяет актуальность кеша без загрузки данных
+    func isCacheValid(for key: CacheKey) -> Bool {
+        guard let date = userDefaults.object(forKey: dateKey(for: key)) as? Date else {
+            return false
+        }
+        return Date().timeIntervalSince(date) <= cacheLifetime
+    }
+    
+    /// Возвращает время последнего обновления кеша
+    func lastUpdateTime(for key: CacheKey) -> Date? {
+        return userDefaults.object(forKey: dateKey(for: key)) as? Date
     }
 }

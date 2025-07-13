@@ -1,0 +1,39 @@
+# Конфигурационные файлы с чувствительными данными
+Configuration.plist
+
+# Xcode
+*.xcuserstate
+project.xcworkspace/
+xcuserdata/
+*.xccheckout
+*.moved-aside
+DerivedData
+*.hmap
+*.ipa
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Logs
+*.log
+
+# Build products
+build/
+*/build/*
+*.o
+*.LinkFileList
+*.LinkFileList
+
+# Dependencies
+Carthage/Build
