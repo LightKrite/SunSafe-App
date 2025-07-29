@@ -3,23 +3,21 @@ import Foundation
 final class MainViewModel {
 
     private let weatherService = WeatherService()
-
-    // 🔹 Передаём данные для главного экрана
-    var onDataUpdate: ((String, String, String) -> Void)?
+    
+    /// Передаём данные для главного экрана
+    var onDataUpdate: ((WeatherResponse) -> Void)?
     var onError: ((String) -> Void)?
     
-    // 🔹 Новое: почасовой прогноз UV
-    var onForecastUpdate: (([HourForecast]) -> Void)?
-
+    /// Новое: почасовой прогноз UV
+    var onForecastUpdate: ((ForecastResponse) -> Void)?
+    
+    /// Загружает текущую погоду для указанного города и передаёт результат через onDataUpdate или ошибку через onError.
     func fetchWeather(for city: String = "Belgrade") {
         weatherService.fetchCurrentWeather(for: city) { [weak self] result in
             switch result {
             case .success(let response):
-                let temp = "\(response.current.temp_c)°C"
-                let condition = response.current.condition.text
-                let uv = "UV: \(response.current.uv)"
                 DispatchQueue.main.async {
-                    self?.onDataUpdate?(temp, condition, uv)
+                    self?.onDataUpdate?(response)
                 }
             case .failure(let error):
                 DispatchQueue.main.async {
@@ -29,12 +27,13 @@ final class MainViewModel {
         }
     }
 
+    /// Загружает почасовой прогноз погоды для указанного города и передаёт результат через onForecastUpdate или ошибку через onError.
     func fetchForecast(for city: String = "Belgrade") {
         weatherService.fetchForecast(for: city) { [weak self] result in
             switch result {
-            case .success(let hours):
+            case .success(let response):
                 DispatchQueue.main.async {
-                    self?.onForecastUpdate?(hours)
+                    self?.onForecastUpdate?(response)
                 }
             case .failure(let error):
                 DispatchQueue.main.async {
