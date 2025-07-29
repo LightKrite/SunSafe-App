@@ -1,9 +1,10 @@
 //
-//  SunSafeTests.swift
-//  SunSafeTests
+// SunSafeTests.swift
+// SunSafeTests
 //
-//  Created by Егор Партенко on 6.6.25..
-//
+// Unit тесты для приложения SunSafe
+// Содержит тесты для проверки основной функциональности: моделей данных, сервисов погоды, логики приложения
+// Пока содержит только шаблонные тесты - требует реализации конкретных тест-кейсов
 
 import XCTest
 @testable import SunSafe

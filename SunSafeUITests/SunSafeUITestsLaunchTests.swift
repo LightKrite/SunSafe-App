@@ -1,9 +1,10 @@
 //
-//  SunSafeUITestsLaunchTests.swift
-//  SunSafeUITests
+// SunSafeUITestsLaunchTests.swift
+// SunSafeUITests
 //
-//  Created by Егор Партенко on 6.6.25..
-//
+// Тесты запуска приложения SunSafe
+// Проверяет корректность запуска приложения в различных конфигурациях UI
+// Создает скриншоты экрана запуска для документации и отладки
 
 import XCTest
 

@@ -1,9 +1,10 @@
 //
-//  SceneDelegate.swift
-//  SunSafe
+// SceneDelegate.swift
+// SunSafe
 //
-//  Created by Егор Партенко on 6.6.25..
-//
+// Делегат сцены приложения - управляет окнами и сценами приложения
+// Отвечает за настройку интерфейса, переходы между фоном/активным состоянием
+// Устанавливает корневой контроллер (MainViewController) при запуске
 
 import UIKit
 
@@ -52,4 +53,3 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 
 }
-

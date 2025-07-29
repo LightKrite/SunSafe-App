@@ -2,6 +2,10 @@
 //  AppDelegate.swift
 //  SunSafe
 //
+//  Главный делегат приложения - точка входа в приложение SunSafe
+//  Отвечает за запуск приложения, настройку Core Data и управление жизненным циклом
+//  Содержит стек Core Data для сохранения пользовательских данных
+//
 //  Created by Егор Партенко on 6.6.25..
 //
 
@@ -78,4 +82,3 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
 }
-
